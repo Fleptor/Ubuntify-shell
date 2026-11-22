@@ -41,9 +41,14 @@ if [ -z "$CURRENT_USER" ]; then
     CURRENT_USER="$(id -un)"
 fi
 
-USER_HOME="$(getent passwd "$CURRENT_USER" 2>/dev/null | cut -d: -f6)"
-if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+# Prefer $HOME if valid, otherwise lookup in /etc/passwd
+if [ -n "$HOME" ] && [ -d "$HOME" ]; then
     USER_HOME="$HOME"
+else
+    USER_HOME="$(getent passwd "$CURRENT_USER" 2>/dev/null | cut -d: -f6)"
+    if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+        USER_HOME="/root"
+    fi
 fi
 
 print_banner

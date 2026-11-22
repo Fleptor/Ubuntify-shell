@@ -49,5 +49,7 @@ jobs:
 
       - name: Verify shell configuration
         run: |
-          grep -q "UBUNTIFY SHELL CONFIGURATION" ~/.bashrc
-          echo "Configuration successfully applied."
+          target_rc="${HOME}/.bashrc"
+          [ -f "$target_rc" ] || target_rc="/root/.bashrc"
+          grep -q "UBUNTIFY SHELL CONFIGURATION" "$target_rc"
+          echo "Configuration successfully verified in $target_rc."
