@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Syntax & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate bash syntax
+        run: |
+          bash -n install.sh
+
+  test-runner:
+    name: Install Test on Debian/Ubuntu
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - "ubuntu:24.04"
+          - "ubuntu:22.04"
+          - "debian:bookworm"
+    container:
+      image: ${{ matrix.distro }}
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq sudo bash git
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test direct script run
+        run: |
+          bash install.sh
+
+      - name: Test piped script run
+        run: |
+          cat install.sh | bash
+
+      - name: Verify shell configuration
+        run: |
+          grep -q "UBUNTIFY SHELL CONFIGURATION" ~/.bashrc
+          echo "Configuration successfully applied."
